@@ -35,11 +35,25 @@ public:
     return res;
   }
 
-  std::vector<int> getDownSafety() const { return _downsafety; }
+  int *getDownSafety() const { return _downsafety; }
 
-  static void printVector(std::vector<int> vec) {
-    for (auto i : vec) {
-      std::cout << i << ", ";
+  int *getEarliestness() const { return _earliestness; }
+
+  void printVector(int *vec) const {
+    for (int i = 1; i < _size - 1; ++i) {
+      if (vec[i] == 1) {
+        std::cout << i << ", ";
+      }
+    }
+    std::cout << "\n";
+  }
+
+  void getPlacement() {
+    std::cout << "[Get Placement]: ";
+    for (int i = 0; i < _size - 1; ++i) {
+      if ((_downsafety[i] == 1) && (_earliestness[i] == 1)) {
+        std::cout << i << ", ";
+      }
     }
     std::cout << "\n";
   }
@@ -55,6 +69,7 @@ public:
     ~DownSafety() {
       delete _used;
       delete _killed;
+      delete _result;
     }
 
     void setUsed(int u) { _used[u] = 1; }
@@ -96,11 +111,7 @@ public:
         }
       }
 
-      for (int i = 1; i < _size - 1; ++i) {
-        if (_result[i] == 1) {
-          _g._downsafety.push_back(i);
-        }
-      }
+      _g._downsafety = _result;
     }
 
   private:
@@ -111,10 +122,67 @@ public:
     int *_result;
   };
 
+  class Earliestness {
+  public:
+    Earliestness(FlowGraph &g) : _g(g), _size(g._size) {
+      _killed = new int[_size]();
+      _result = new int[_size];
+    }
+
+    ~Earliestness() { delete _killed; }
+
+    void setKilled(int u) { _killed[u] = 1; }
+
+    void compute() {
+      for (int i = 1; i < _size; ++i) {
+        _result[i] = -1;
+      }
+      _result[0] = 1;
+
+      std::queue<int> worklist{};
+      for (auto tmp_v : _g.getSuccessors(0)) {
+        worklist.push(tmp_v);
+      }
+
+      while (!worklist.empty()) {
+        int tmp_v = worklist.front();
+        worklist.pop();
+        int tmp_res_v = 0;
+
+        for (auto tmp_u : _g.getPrecessors(tmp_v)) {
+          if (_result[tmp_u] == -1) {
+            continue;
+          }
+          int tmp =
+              (!_g._downsafety[tmp_u] && _result[tmp_u]) || (_killed[tmp_u]);
+          tmp_res_v = tmp_res_v || tmp;
+        }
+        if (tmp_res_v != _result[tmp_v]) {
+          std::cout << "[Update] Earliestness[" << tmp_v
+                    << "] := " << ((tmp_res_v == 1) ? "True" : "False") << "\n";
+          _result[tmp_v] = tmp_res_v;
+          for (auto tmp_v_succ : _g.getSuccessors(tmp_v)) {
+            worklist.push(tmp_v_succ);
+            // std::cout << "[Debug] Add to worklist: " << tmp_u_prec << "\n";
+          }
+        }
+      }
+
+      _g._earliestness = _result;
+    }
+
+  private:
+    FlowGraph &_g;
+    int _size;
+    int *_killed;
+    int *_result;
+  };
+
 private:
   int _size;
   int *_edges;
-  std::vector<int> _downsafety{};
+  int *_downsafety;
+  int *_earliestness;
 };
 
 int main() {
@@ -156,7 +224,16 @@ int main() {
   d_safe.setKilled(2);
   d_safe.compute();
   std::cout << "[D-Safety Result]: ";
-  FlowGraph::printVector(g.getDownSafety());
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.setKilled(2);
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
 
   return 0;
 }

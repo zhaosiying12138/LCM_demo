@@ -455,10 +455,51 @@ void test6() {
   g.draw("demo6_after.dot", 1);
 }
 
+// Greatest solution for down-safety, the same as test1()
+void test7() { }
+
+// Safety & Split critical edges
+void test8() {
+  FlowGraph g(8);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(1, 4);
+  g.addEdge(2, 3);
+  g.addEdge(4, 5);
+  g.addEdge(3, 6);
+  g.addEdge(5, 8);
+  g.addEdge(8, 6);
+  g.addEdge(5, 7);
+  g.addEdge(6, 9); // exit node 's edges
+  g.addEdge(7, 9); // exit node 's edges
+
+  g.setUsed(3);
+  g.setUsed(6);
+  g.setKilled(2);
+  g.setKilled(4);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
+  g.draw("demo8_before.dot", 0);
+  g.draw("demo8_after.dot", 1);
+}
+
 int main() {
   std::cout << "Busy-Code-Motion implemented By zhaosiying12138@LiuYueCity "
                "Academy of Sciences!\n";
-  test1();
+  test8();
 
   return 0;
 }

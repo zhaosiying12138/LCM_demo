@@ -1,4 +1,3 @@
-#include <cassert>
 #include <iostream>
 #include <queue>
 #include <vector>
@@ -7,13 +6,21 @@ class FlowGraph {
 public:
   FlowGraph(int size) : _size(size + 2) {
     _edges = new int[_size * _size]();
-    addEdge(0, 1);
-    addEdge(size, size + 1);
+    _used = new int[_size]();
+    _killed = new int[_size]();
   }
 
-  ~FlowGraph() { delete _edges; }
+  ~FlowGraph() {
+    delete _edges;
+    delete _used;
+    delete _killed;
+  }
 
   void addEdge(int u, int v) { _edges[u * _size + v] = 1; }
+
+  void setUsed(int u) { _used[u] = 1; }
+
+  void setKilled(int u) { _killed[u] = 1; }
 
   std::vector<int> getPrecessors(int v) const {
     std::vector<int> res;
@@ -61,20 +68,10 @@ public:
   class DownSafety {
   public:
     DownSafety(FlowGraph &g) : _g(g), _size(g._size) {
-      _used = new int[_size]();
-      _killed = new int[_size]();
       _result = new int[_size];
     }
 
-    ~DownSafety() {
-      delete _used;
-      delete _killed;
-      delete _result;
-    }
-
-    void setUsed(int u) { _used[u] = 1; }
-
-    void setKilled(int u) { _killed[u] = 1; }
+    ~DownSafety() { delete _result; }
 
     void compute() {
       for (int i = 0; i < _size - 1; ++i) {
@@ -90,7 +87,7 @@ public:
       while (!worklist.empty()) {
         int tmp_u = worklist.front();
         worklist.pop();
-        int tmp_res_u = !_killed[tmp_u];
+        int tmp_res_u = !_g._killed[tmp_u];
 
         for (auto tmp_v : _g.getSuccessors(tmp_u)) {
           if (_result[tmp_v] == -1) {
@@ -99,7 +96,7 @@ public:
           tmp_res_u = tmp_res_u && _result[tmp_v];
         }
 
-        tmp_res_u = tmp_res_u || _used[tmp_u];
+        tmp_res_u = tmp_res_u || _g._used[tmp_u];
         if (tmp_res_u != _result[tmp_u]) {
           std::cout << "[Update] D-Safe[" << tmp_u
                     << "] := " << ((tmp_res_u == 1) ? "True" : "False") << "\n";
@@ -117,21 +114,16 @@ public:
   private:
     FlowGraph &_g;
     int _size;
-    int *_used;
-    int *_killed;
     int *_result;
   };
 
   class Earliestness {
   public:
     Earliestness(FlowGraph &g) : _g(g), _size(g._size) {
-      _killed = new int[_size]();
       _result = new int[_size];
     }
 
-    ~Earliestness() { delete _killed; }
-
-    void setKilled(int u) { _killed[u] = 1; }
+    ~Earliestness() {}
 
     void compute() {
       for (int i = 1; i < _size; ++i) {
@@ -154,7 +146,7 @@ public:
             continue;
           }
           int tmp =
-              (!_g._downsafety[tmp_u] && _result[tmp_u]) || (_killed[tmp_u]);
+              (!_g._downsafety[tmp_u] && _result[tmp_u]) || (_g._killed[tmp_u]);
           tmp_res_v = tmp_res_v || tmp;
         }
         if (tmp_res_v != _result[tmp_v]) {
@@ -174,13 +166,14 @@ public:
   private:
     FlowGraph &_g;
     int _size;
-    int *_killed;
     int *_result;
   };
 
 private:
   int _size;
   int *_edges;
+  int *_used;
+  int *_killed;
   int *_downsafety;
   int *_earliestness;
 };
@@ -190,6 +183,8 @@ int main() {
                "Academy of Science!\n";
 
   FlowGraph g(18);
+
+  g.addEdge(0, 1); // entry node 's edges
   g.addEdge(1, 2);
   g.addEdge(1, 4);
   g.addEdge(2, 3);
@@ -213,22 +208,24 @@ int main() {
   g.addEdge(15, 16);
   g.addEdge(16, 18);
   g.addEdge(17, 18);
+  g.addEdge(18, 19); // exit node 's edges
+
+  g.setUsed(3);
+  g.setUsed(10);
+  g.setUsed(15);
+  g.setUsed(16);
+  g.setUsed(17);
+  g.setKilled(2);
 
   std::cout << "Step 1: Compute Down-Safety\n";
   FlowGraph::DownSafety d_safe{g};
-  d_safe.setUsed(3);
-  d_safe.setUsed(10);
-  d_safe.setUsed(15);
-  d_safe.setUsed(16);
-  d_safe.setUsed(17);
-  d_safe.setKilled(2);
+
   d_safe.compute();
   std::cout << "[D-Safety Result]: ";
   g.printVector(g.getDownSafety());
 
   std::cout << "\nStep 2: Compute Earliestness\n";
   FlowGraph::Earliestness early{g};
-  early.setKilled(2);
   early.compute();
   std::cout << "[Earliestness Result]: ";
   g.printVector(g.getEarliestness());

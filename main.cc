@@ -8,12 +8,16 @@ public:
     _edges = new int[_size * _size]();
     _used = new int[_size]();
     _killed = new int[_size]();
+    _downsafety = new int[_size];
+    _earliestness = new int[_size];
   }
 
   ~FlowGraph() {
     delete _edges;
     delete _used;
     delete _killed;
+    delete _downsafety;
+    delete _earliestness;
   }
 
   void addEdge(int u, int v) { _edges[u * _size + v] = 1; }
@@ -67,11 +71,9 @@ public:
 
   class DownSafety {
   public:
-    DownSafety(FlowGraph &g) : _g(g), _size(g._size) {
-      _result = new int[_size];
-    }
+    DownSafety(FlowGraph &g) : _g(g), _size(g._size), _result(g._downsafety) {}
 
-    ~DownSafety() { delete _result; }
+    ~DownSafety() {}
 
     void compute() {
       for (int i = 0; i < _size - 1; ++i) {
@@ -107,8 +109,6 @@ public:
           }
         }
       }
-
-      _g._downsafety = _result;
     }
 
   private:
@@ -119,9 +119,8 @@ public:
 
   class Earliestness {
   public:
-    Earliestness(FlowGraph &g) : _g(g), _size(g._size) {
-      _result = new int[_size];
-    }
+    Earliestness(FlowGraph &g)
+        : _g(g), _size(g._size), _result(g._earliestness) {}
 
     ~Earliestness() {}
 
@@ -159,8 +158,6 @@ public:
           }
         }
       }
-
-      _g._earliestness = _result;
     }
 
   private:
@@ -180,7 +177,7 @@ private:
 
 int main() {
   std::cout << "Busy-Code-Motion implemented By zhaosiying12138@LiuYueCity "
-               "Academy of Science!\n";
+               "Academy of Sciences!\n";
 
   FlowGraph g(18);
 

@@ -1,3 +1,4 @@
+#include <fstream>
 #include <iostream>
 #include <queue>
 #include <vector>
@@ -61,12 +62,38 @@ public:
 
   void getPlacement() {
     std::cout << "[Get Placement]: ";
-    for (int i = 0; i < _size - 1; ++i) {
+    for (int i = 1; i < _size - 1; ++i) {
       if ((_downsafety[i] == 1) && (_earliestness[i] == 1)) {
         std::cout << i << ", ";
       }
     }
     std::cout << "\n";
+  }
+
+  void draw(std::string Filepath, int isPlaced) {
+    std::ofstream dotOuts;
+    dotOuts.open(Filepath, std::ios::out | std::ios::trunc);
+
+    dotOuts << "digraph G {\n";
+    dotOuts << "\tnode[shape=box;];\n";
+    dotOuts << "\tedge[arrowhead=open;];\n";
+    dotOuts << "\n";
+
+    for (int i = 1; i < _size - 1; i++) {
+      drawNodes(dotOuts, i, _used[i], _killed[i], isPlaced, _downsafety[i],
+                _earliestness[i]);
+    }
+    dotOuts << "\n";
+    for (int i = 1; i < _size - 1; i++) {
+      for (int j = 1; j < _size - 1; j++) {
+        if (_edges[i * _size + j] == 1) {
+          drawEdges(dotOuts, i, j);
+        }
+      }
+    }
+    dotOuts << "}\n";
+
+    dotOuts.close();
   }
 
   class DownSafety {
@@ -173,9 +200,43 @@ private:
   int *_killed;
   int *_downsafety;
   int *_earliestness;
+
+  void drawNodes(std::ofstream &dotOuts, int i, int isUsed, int isKilled,
+                 int isPlaced, int isSafety, int isEarliest) {
+    dotOuts << "\t"
+            << "BB" << i << " [label=\"";
+
+    if (isPlaced && isSafety && isEarliest) {
+      dotOuts << "h := x + y;\\n";
+    }
+    if (isUsed) {
+      if (isPlaced) {
+        dotOuts << "... := h;\\n";
+      } else {
+        dotOuts << "... := x + y;\\n";
+      }
+    }
+    if (isKilled) {
+      dotOuts << "x := ...;\\n";
+    }
+    dotOuts << "\"; "
+            << "xlabel=\"BB" << i << ":\";";
+    if (isPlaced && isSafety) {
+      dotOuts << " color=Turquoise;";
+    }
+    if (isPlaced && isEarliest) {
+      dotOuts << " style=filled;";
+    }
+    dotOuts << "];\n";
+  }
+
+  void drawEdges(std::ofstream &dotOuts, int i, int j) {
+    dotOuts << "\t"
+            << "BB" << i << "->BB" << j << ";\n";
+  }
 };
 
-int main() {
+void test1() {
   std::cout << "Busy-Code-Motion implemented By zhaosiying12138@LiuYueCity "
                "Academy of Sciences!\n";
 
@@ -216,7 +277,6 @@ int main() {
 
   std::cout << "Step 1: Compute Down-Safety\n";
   FlowGraph::DownSafety d_safe{g};
-
   d_safe.compute();
   std::cout << "[D-Safety Result]: ";
   g.printVector(g.getDownSafety());
@@ -228,6 +288,11 @@ int main() {
   g.printVector(g.getEarliestness());
 
   g.getPlacement();
+  g.draw("demo1_before.dot", 0);
+  g.draw("demo1_after.dot", 1);
+}
 
+int main() {
+  test1();
   return 0;
 }

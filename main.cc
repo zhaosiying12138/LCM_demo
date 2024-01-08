@@ -104,13 +104,13 @@ public:
 
     void compute() {
       for (int i = 0; i < _size - 1; ++i) {
-        _result[i] = -1;
+        _result[i] = 1;
       }
       _result[_size - 1] = 0;
 
       std::queue<int> worklist{};
-      for (auto tmp_u : _g.getPrecessors(_size - 1)) {
-        worklist.push(tmp_u);
+      for (int i = 0; i < _size - 1; ++i) {
+        worklist.push(i);
       }
 
       while (!worklist.empty()) {
@@ -119,9 +119,6 @@ public:
         int tmp_res_u = !_g._killed[tmp_u];
 
         for (auto tmp_v : _g.getSuccessors(tmp_u)) {
-          if (_result[tmp_v] == -1) {
-            continue;
-          }
           tmp_res_u = tmp_res_u && _result[tmp_v];
         }
 
@@ -153,13 +150,13 @@ public:
 
     void compute() {
       for (int i = 1; i < _size; ++i) {
-        _result[i] = -1;
+        _result[i] = 0;
       }
       _result[0] = 1;
 
       std::queue<int> worklist{};
-      for (auto tmp_v : _g.getSuccessors(0)) {
-        worklist.push(tmp_v);
+      for (int i = _size - 2; i > 0; --i) {
+        worklist.push(i);
       }
 
       while (!worklist.empty()) {
@@ -168,9 +165,6 @@ public:
         int tmp_res_v = 0;
 
         for (auto tmp_u : _g.getPrecessors(tmp_v)) {
-          if (_result[tmp_u] == -1) {
-            continue;
-          }
           int tmp =
               (!_g._downsafety[tmp_u] && _result[tmp_u]) || (_g._killed[tmp_u]);
           tmp_res_v = tmp_res_v || tmp;

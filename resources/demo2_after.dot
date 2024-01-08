@@ -1,0 +1,18 @@
+digraph G {
+	node[shape=box;];
+	edge[arrowhead=open;];
+
+	BB1 [label=""; xlabel="BB1:"; style=filled;];
+	BB2 [label="x := ...;\n"; xlabel="BB2:"; style=filled;];
+	BB3 [label="h := x + y;\n... := h;\n"; xlabel="BB3:"; color=Turquoise; style=filled;];
+	BB4 [label="x := ...;\n"; xlabel="BB4:"; style=filled;];
+	BB5 [label="h := x + y;\n"; xlabel="BB5:"; color=Turquoise; style=filled;];
+	BB6 [label="... := h;\n"; xlabel="BB6:"; color=Turquoise;];
+
+	BB1->BB2;
+	BB1->BB4;
+	BB2->BB3;
+	BB3->BB6;
+	BB4->BB5;
+	BB5->BB6;
+}

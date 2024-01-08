@@ -237,9 +237,6 @@ private:
 };
 
 void test1() {
-  std::cout << "Busy-Code-Motion implemented By zhaosiying12138@LiuYueCity "
-               "Academy of Sciences!\n";
-
   FlowGraph g(18);
 
   g.addEdge(0, 1); // entry node 's edges
@@ -292,7 +289,176 @@ void test1() {
   g.draw("demo1_after.dot", 1);
 }
 
+void test2() {
+  FlowGraph g(6);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(1, 4);
+  g.addEdge(2, 3);
+  g.addEdge(4, 5);
+  g.addEdge(3, 6);
+  g.addEdge(5, 6);
+  g.addEdge(6, 7); // exit node 's edges
+
+  g.setUsed(3);
+  g.setUsed(6);
+  g.setKilled(2);
+  g.setKilled(4);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
+  g.draw("demo2_before.dot", 0);
+  g.draw("demo2_after.dot", 1);
+}
+
+void test3() {
+  FlowGraph g(7);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(1, 4);
+  g.addEdge(2, 3);
+  g.addEdge(4, 5);
+  g.addEdge(3, 6);
+  g.addEdge(5, 6);
+  g.addEdge(5, 7);
+  g.addEdge(6, 8); // exit node 's edges
+  g.addEdge(7, 8); // exit node 's edges
+
+  g.setUsed(3);
+  g.setUsed(6);
+  g.setKilled(2);
+  g.setKilled(4);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
+  g.draw("demo3_before.dot", 0);
+  g.draw("demo3_after.dot", 1);
+}
+
+void test4() {
+  FlowGraph g(6);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(1, 4);
+  g.addEdge(2, 3);
+  g.addEdge(4, 5);
+  g.addEdge(3, 6);
+  g.addEdge(5, 6);
+  g.addEdge(6, 7); // exit node 's edges
+
+  g.setUsed(3);
+  g.setUsed(5);
+  g.setUsed(6);
+  g.setKilled(2);
+  g.setKilled(4);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
+  g.draw("demo4_before.dot", 0);
+  g.draw("demo4_after.dot", 1);
+}
+
+void test5() {
+  FlowGraph g(4);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(2, 3);
+  g.addEdge(3, 3);
+  g.addEdge(3, 4);
+  g.addEdge(4, 5); // exit node 's edges
+
+  g.setUsed(3);
+  g.setKilled(1);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
+  g.draw("demo5_before.dot", 0);
+  g.draw("demo5_after.dot", 1);
+}
+
+void test6() {
+  FlowGraph g(4);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(2, 3);
+  g.addEdge(3, 3);
+  g.addEdge(3, 4);
+  g.addEdge(4, 5); // exit node 's edges
+
+  g.setUsed(2);
+  g.setUsed(3);
+  g.setKilled(1);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacement();
+  g.draw("demo6_before.dot", 0);
+  g.draw("demo6_after.dot", 1);
+}
+
 int main() {
+  std::cout << "Busy-Code-Motion implemented By zhaosiying12138@LiuYueCity "
+               "Academy of Sciences!\n";
   test1();
+
   return 0;
 }

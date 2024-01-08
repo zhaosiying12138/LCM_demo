@@ -236,6 +236,7 @@ private:
   }
 };
 
+// Original Paper Demo
 void test1() {
   FlowGraph g(18);
 
@@ -289,6 +290,7 @@ void test1() {
   g.draw("demo1_after.dot", 1);
 }
 
+// PRE & Computional Optimal
 void test2() {
   FlowGraph g(6);
 
@@ -323,6 +325,7 @@ void test2() {
   g.draw("demo2_after.dot", 1);
 }
 
+// Safety
 void test3() {
   FlowGraph g(7);
 
@@ -359,6 +362,7 @@ void test3() {
   g.draw("demo3_after.dot", 1);
 }
 
+// FRE of test2
 void test4() {
   FlowGraph g(6);
 
@@ -394,6 +398,7 @@ void test4() {
   g.draw("demo4_after.dot", 1);
 }
 
+// PRE: Loop Invariant
 void test5() {
   FlowGraph g(4);
 
@@ -424,6 +429,7 @@ void test5() {
   g.draw("demo5_after.dot", 1);
 }
 
+// FRE: Loop Invariant
 void test6() {
   FlowGraph g(4);
 

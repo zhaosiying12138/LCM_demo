@@ -12,7 +12,8 @@ public:
     _downsafety = new int[_size];
     _earliestness = new int[_size];
     _delay = new int[_size];
-    _latest = new int[_size];
+    _latest = new int[_size]();
+    _isolated = new int[_size];
   }
 
   ~FlowGraph() {
@@ -23,6 +24,7 @@ public:
     delete _earliestness;
     delete _delay;
     delete _latest;
+    delete _isolated;
   }
 
   void addEdge(int u, int v) { _edges[u * _size + v] = 1; }
@@ -59,6 +61,8 @@ public:
 
   int *getLatest() const { return _latest; }
 
+  int *getIsolated() const { return _isolated; }
+
   void printVector(int *vec) const {
     for (int i = 1; i < _size - 1; ++i) {
       if (vec[i] == 1) {
@@ -72,6 +76,33 @@ public:
     std::cout << "[Get Placement of BCM]: ";
     for (int i = 1; i < _size - 1; ++i) {
       if ((_downsafety[i] == 1) && (_earliestness[i] == 1)) {
+        std::cout << i << ", ";
+      }
+    }
+    std::cout << "\n";
+  }
+
+  void getPlacementLCM() {
+    std::cout << "[Get Placement of LCM]:\n";
+    std::cout << "[Optimal Computation Points]: ";
+    for (int i = 1; i < _size - 1; ++i) {
+      if ((_latest[i] == 1) && (_isolated[i] == 0)) {
+        std::cout << i << ", ";
+      }
+    }
+    std::cout << "\n";
+
+    std::cout << "[Isolated Computation]: ";
+    for (int i = 1; i < _size - 1; ++i) {
+      if ((_latest[i] == 1) && (_isolated[i] == 1)) {
+        std::cout << i << ", ";
+      }
+    }
+    std::cout << "\n";
+
+    std::cout << "[Redundant Occurence]: ";
+    for (int i = 1; i < _size - 1; ++i) {
+      if ((_used[i] == 1) && !((_latest[i] == 1) && (_isolated[i] == 1))) {
         std::cout << i << ", ";
       }
     }
@@ -116,6 +147,33 @@ public:
     for (int i = 1; i < _size - 1; i++) {
       drawNodesALCM(dotOuts, i, _used[i], _killed[i], isPlaced, _delay[i],
                     _latest[i]);
+    }
+    dotOuts << "\n";
+    for (int i = 1; i < _size - 1; i++) {
+      for (int j = 1; j < _size - 1; j++) {
+        if (_edges[i * _size + j] == 1) {
+          drawEdges(dotOuts, i, j);
+        }
+      }
+    }
+    dotOuts << "}\n";
+
+    dotOuts.close();
+  }
+
+  void drawLCM(std::string Filepath) {
+    std::ofstream dotOuts;
+    dotOuts.open(Filepath, std::ios::out | std::ios::trunc);
+
+    dotOuts << "digraph G {\n";
+    dotOuts << "\tnode[shape=box; color=black;];\n";
+    dotOuts << "\tedge[arrowhead=open;];\n";
+    dotOuts << "\n";
+
+    for (int i = 1; i < _size - 1; i++) {
+      drawNodesLCM(dotOuts, i, _killed[i], (_latest[i] && (!_isolated[i])),
+                   (_latest[i] && _isolated[i]),
+                   (_used[i] && !(_latest[i] && _isolated[i])));
     }
     dotOuts << "\n";
     for (int i = 1; i < _size - 1; i++) {
@@ -278,6 +336,53 @@ public:
     int *_result;
   };
 
+  class Isolated {
+  public:
+    Isolated(FlowGraph &g) : _g(g), _size(g._size), _result(g._isolated) {}
+
+    ~Isolated() {}
+
+    void compute() {
+      for (int i = 0; i < _size - 1; ++i) {
+        _result[i] = 1;
+      }
+      // It should be True at the exit node to have the greatest solution!
+      _result[_size - 1] = 1;
+
+      std::queue<int> worklist{};
+      for (int i = 0; i < _size - 1; ++i) {
+        worklist.push(i);
+      }
+
+      while (!worklist.empty()) {
+        int tmp_u = worklist.front();
+        worklist.pop();
+        int tmp_res_u = 1;
+
+        for (auto tmp_v : _g.getSuccessors(tmp_u)) {
+          int tmp_res_v =
+              _g._latest[tmp_v] || ((!_g._used[tmp_v]) && _result[tmp_v]);
+          tmp_res_u = tmp_res_u && tmp_res_v;
+        }
+
+        if (tmp_res_u != _result[tmp_u]) {
+          std::cout << "[Update] Isolated[" << tmp_u
+                    << "] := " << ((tmp_res_u == 1) ? "True" : "False") << "\n";
+          _result[tmp_u] = tmp_res_u;
+          for (auto tmp_u_prec : _g.getPrecessors(tmp_u)) {
+            worklist.push(tmp_u_prec);
+            // std::cout << "[Debug] Add to worklist: " << tmp_u_prec << "\n";
+          }
+        }
+      }
+    }
+
+  private:
+    FlowGraph &_g;
+    int _size;
+    int *_result;
+  };
+
 private:
   int _size;
   int *_edges;
@@ -287,6 +392,7 @@ private:
   int *_earliestness;
   int *_delay;
   int *_latest;
+  int *_isolated;
 
   void drawNodesBCM(std::ofstream &dotOuts, int i, int isUsed, int isKilled,
                     int isPlaced, int isSafety, int isEarliest) {
@@ -343,6 +449,44 @@ private:
     if (isPlaced && isLatest) {
       dotOuts << " color=yellow;";
     }
+    dotOuts << "];\n";
+  }
+
+  void drawNodesLCM(std::ofstream &dotOuts, int i, int isKilled, int isOCP,
+                    int isIC, int isRO) {
+    dotOuts << "\t"
+            << "BB" << i << " [label=\"";
+
+    if (isOCP) {
+      dotOuts << "h := x + y;\\n";
+    } else if (isIC) {
+      dotOuts << "... := x + y;\\n";
+    }
+    if (isRO) {
+      dotOuts << "... := h;\\n";
+    }
+    if (isKilled) {
+      dotOuts << "x := ...;\\n";
+    }
+    dotOuts << "\"; "
+            << "xlabel=\"BB" << i << ":\";";
+
+    if (isOCP && !isRO) {
+      dotOuts << " fillcolor=yellow; style=filled;";
+    } else if (isIC) {
+      dotOuts << " fillcolor=pink; style=filled;";
+    }
+    if (isKilled) {
+      dotOuts << " fillcolor=cornsilk; style=filled;";
+    }
+    if (isRO) {
+      if (!isOCP) {
+        dotOuts << " fillcolor=darkseagreen3; style=filled;";
+      } else {
+        dotOuts << " fillcolor=\"yellow:darkseagreen3\"; style=filled;";
+      }
+    }
+
     dotOuts << "];\n";
   }
 
@@ -679,8 +823,17 @@ void test9() {
   std::cout << "[Latest Result]: ";
   g.printVector(g.getLatest());
 
-  g.drawALCM("demo9_alcm_before.dot", 0);
   g.drawALCM("demo9_alcm_after.dot", 1);
+
+  std::cout << "\nStep 4: Compute Isolated\n";
+  FlowGraph::Isolated isolated{g};
+  isolated.compute();
+  std::cout << "[Isolated Result]: ";
+  g.printVector(g.getIsolated());
+
+  std::cout << "\n";
+  g.getPlacementLCM();
+  g.drawLCM("demo9_lcm.dot");
 }
 
 int main() {

@@ -1,24 +1,24 @@
 digraph G {
-	node[shape=box;];
+	node[shape=box; color=black;];
 	edge[arrowhead=open;];
 
 	BB1 [label=""; xlabel="BB1:";];
-	BB2 [label="x := ...;\n"; xlabel="BB2:";];
-	BB3 [label="... := x + y;\n"; xlabel="BB3:";];
+	BB2 [label="x := ...;\n"; xlabel="BB2:"; fillcolor=cornsilk; style=filled;];
+	BB3 [label="... := x + y;\n"; xlabel="BB3:"; fillcolor=pink; style=filled;];
 	BB4 [label=""; xlabel="BB4:";];
 	BB5 [label=""; xlabel="BB5:";];
 	BB6 [label=""; xlabel="BB6:";];
 	BB7 [label=""; xlabel="BB7:";];
-	BB8 [label=""; xlabel="BB8:";];
+	BB8 [label="h := x + y;\n"; xlabel="BB8:"; fillcolor=yellow; style=filled;];
 	BB9 [label=""; xlabel="BB9:";];
-	BB10 [label="... := x + y;\n"; xlabel="BB10:";];
+	BB10 [label="... := h;\n"; xlabel="BB10:"; fillcolor=darkseagreen3; style=filled;];
 	BB11 [label=""; xlabel="BB11:";];
 	BB12 [label=""; xlabel="BB12:";];
 	BB13 [label=""; xlabel="BB13:";];
 	BB14 [label=""; xlabel="BB14:";];
-	BB15 [label="... := x + y;\n"; xlabel="BB15:";];
-	BB16 [label="... := x + y;\n"; xlabel="BB16:";];
-	BB17 [label="... := x + y;\n"; xlabel="BB17:";];
+	BB15 [label="h := x + y;\n... := h;\n"; xlabel="BB15:"; fillcolor="yellow:darkseagreen3"; style=filled;];
+	BB16 [label="... := h;\n"; xlabel="BB16:"; fillcolor=darkseagreen3; style=filled;];
+	BB17 [label="... := x + y;\n"; xlabel="BB17:"; fillcolor=pink; style=filled;];
 	BB18 [label=""; xlabel="BB18:";];
 
 	BB1->BB2;

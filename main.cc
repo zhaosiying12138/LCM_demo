@@ -100,7 +100,7 @@ public:
     }
     std::cout << "\n";
 
-    std::cout << "[Redundant Occurence]: ";
+    std::cout << "[Redundant Occurrence]: ";
     for (int i = 1; i < _size - 1; ++i) {
       if ((_used[i] == 1) && !((_latest[i] == 1) && (_isolated[i] == 1))) {
         std::cout << i << ", ";
@@ -400,17 +400,17 @@ private:
             << "BB" << i << " [label=\"";
 
     if (isPlaced && isSafety && isEarliest) {
-      dotOuts << "h := x + y;\\n";
+      dotOuts << "h := a + b;\\n";
     }
     if (isUsed) {
       if (isPlaced) {
         dotOuts << "... := h;\\n";
       } else {
-        dotOuts << "... := x + y;\\n";
+        dotOuts << "... := a + b;\\n";
       }
     }
     if (isKilled) {
-      dotOuts << "x := ...;\\n";
+      dotOuts << "a := c;\\n";
     }
     dotOuts << "\"; "
             << "xlabel=\"BB" << i << ":\";";
@@ -429,17 +429,17 @@ private:
             << "BB" << i << " [label=\"";
 
     if (isPlaced && isLatest) {
-      dotOuts << "h := x + y;\\n";
+      dotOuts << "h := a + b;\\n";
     }
     if (isUsed) {
       if (isPlaced) {
         dotOuts << "... := h;\\n";
       } else {
-        dotOuts << "... := x + y;\\n";
+        dotOuts << "... := a + b;\\n";
       }
     }
     if (isKilled) {
-      dotOuts << "x := ...;\\n";
+      dotOuts << "a := c;\\n";
     }
     dotOuts << "\"; "
             << "xlabel=\"BB" << i << ":\";";
@@ -458,15 +458,15 @@ private:
             << "BB" << i << " [label=\"";
 
     if (isOCP) {
-      dotOuts << "h := x + y;\\n";
+      dotOuts << "h := a + b;\\n";
     } else if (isIC) {
-      dotOuts << "... := x + y;\\n";
+      dotOuts << "... := a + b;\\n";
     }
     if (isRO) {
       dotOuts << "... := h;\\n";
     }
     if (isKilled) {
-      dotOuts << "x := ...;\\n";
+      dotOuts << "a := c;\\n";
     }
     dotOuts << "\"; "
             << "xlabel=\"BB" << i << ":\";";
@@ -475,9 +475,6 @@ private:
       dotOuts << " fillcolor=yellow; style=filled;";
     } else if (isIC) {
       dotOuts << " fillcolor=pink; style=filled;";
-    }
-    if (isKilled) {
-      dotOuts << " fillcolor=cornsilk; style=filled;";
     }
     if (isRO) {
       if (!isOCP) {
@@ -762,7 +759,7 @@ void test8() {
   g.drawBCM("demo8_after.dot", 1);
 }
 
-// Original Paper Demo
+// Original Paper 92 Demo
 void test9() {
   FlowGraph g(18);
 
@@ -836,10 +833,87 @@ void test9() {
   g.drawLCM("demo9_lcm.dot");
 }
 
+// Original Paper 94 Demo
+void test10() {
+  FlowGraph g(19);
+
+  g.addEdge(0, 1); // entry node 's edges
+  g.addEdge(1, 2);
+  g.addEdge(2, 18);
+  g.addEdge(1, 11);
+  g.addEdge(11, 3);
+  g.addEdge(18, 3);
+  g.addEdge(3, 12);
+  g.addEdge(12, 5);
+  g.addEdge(3, 13);
+  g.addEdge(13, 6);
+  g.addEdge(3, 14);
+  g.addEdge(14, 10);
+  g.addEdge(4, 5);
+  g.addEdge(5, 4);
+  g.addEdge(5, 15);
+  g.addEdge(15, 8);
+  g.addEdge(6, 16);
+  g.addEdge(16, 6);
+  g.addEdge(6, 7);
+  g.addEdge(6, 17);
+  g.addEdge(17, 9);
+  g.addEdge(7, 8);
+  g.addEdge(8, 19);
+  g.addEdge(19, 9);
+  g.addEdge(9, 10);
+  g.addEdge(10, 20); // exit node 's edges
+
+  g.setUsed(2);
+  g.setUsed(18);
+  g.setUsed(4);
+  g.setUsed(7);
+  g.setUsed(8);
+  g.setUsed(9);
+  g.setKilled(2);
+  g.setKilled(8);
+
+  std::cout << "Step 1: Compute Down-Safety\n";
+  FlowGraph::DownSafety d_safe{g};
+  d_safe.compute();
+  std::cout << "[D-Safety Result]: ";
+  g.printVector(g.getDownSafety());
+
+  std::cout << "\nStep 2: Compute Earliestness\n";
+  FlowGraph::Earliestness early{g};
+  early.compute();
+  std::cout << "[Earliestness Result]: ";
+  g.printVector(g.getEarliestness());
+
+  g.getPlacementBCM();
+  g.drawBCM("demo10_t_refined_cfg.dot", 0);
+  g.drawBCM("demo10_bcm.dot", 1);
+
+  std::cout << "\nStep 3: Compute Delay & Latest\n";
+  FlowGraph::DelayLatest delay{g};
+  delay.compute();
+  std::cout << "[Delay Result]: ";
+  g.printVector(g.getDelay());
+  std::cout << "[Latest Result]: ";
+  g.printVector(g.getLatest());
+
+  g.drawALCM("demo10_alcm.dot", 1);
+
+  std::cout << "\nStep 4: Compute Isolated\n";
+  FlowGraph::Isolated isolated{g};
+  isolated.compute();
+  std::cout << "[Isolated Result]: ";
+  g.printVector(g.getIsolated());
+
+  std::cout << "\n";
+  g.getPlacementLCM();
+  g.drawLCM("demo10_lcm.dot");
+}
+
 int main() {
   std::cout << "Lazy-Code-Motion implemented By zhaosiying12138@LiuYueCity "
                "Academy of Sciences!\n";
-  test9();
+  test10();
 
   return 0;
 }

@@ -1,0 +1,47 @@
+digraph G {
+	node[shape=box;];
+	edge[arrowhead=open;];
+
+	BB1 [label=""; xlabel="BB1:"; style=filled;];
+	BB2 [label="h := a + b;\n... := h;\na := c;\n"; xlabel="BB2:"; color=Turquoise; style=filled;];
+	BB3 [label=""; xlabel="BB3:"; style=filled;];
+	BB4 [label="... := h;\n"; xlabel="BB4:"; color=Turquoise;];
+	BB5 [label=""; xlabel="BB5:"; color=Turquoise;];
+	BB6 [label=""; xlabel="BB6:"; color=Turquoise;];
+	BB7 [label="... := h;\n"; xlabel="BB7:"; color=Turquoise;];
+	BB8 [label="... := h;\na := c;\n"; xlabel="BB8:"; color=Turquoise;];
+	BB9 [label="h := a + b;\n... := h;\n"; xlabel="BB9:"; color=Turquoise; style=filled;];
+	BB10 [label=""; xlabel="BB10:"; style=filled;];
+	BB11 [label=""; xlabel="BB11:"; style=filled;];
+	BB12 [label="h := a + b;\n"; xlabel="BB12:"; color=Turquoise; style=filled;];
+	BB13 [label="h := a + b;\n"; xlabel="BB13:"; color=Turquoise; style=filled;];
+	BB14 [label=""; xlabel="BB14:"; style=filled;];
+	BB15 [label=""; xlabel="BB15:"; color=Turquoise;];
+	BB16 [label=""; xlabel="BB16:"; color=Turquoise;];
+	BB17 [label=""; xlabel="BB17:"; color=Turquoise;];
+	BB18 [label="h := a + b;\n... := h;\n"; xlabel="BB18:"; color=Turquoise; style=filled;];
+
+	BB1->BB2;
+	BB1->BB11;
+	BB2->BB18;
+	BB3->BB12;
+	BB3->BB13;
+	BB3->BB14;
+	BB4->BB5;
+	BB5->BB4;
+	BB5->BB15;
+	BB6->BB7;
+	BB6->BB16;
+	BB6->BB17;
+	BB7->BB8;
+	BB8->BB9;
+	BB9->BB10;
+	BB11->BB3;
+	BB12->BB5;
+	BB13->BB6;
+	BB14->BB10;
+	BB15->BB8;
+	BB16->BB6;
+	BB17->BB9;
+	BB18->BB3;
+}
